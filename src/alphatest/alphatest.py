@@ -17,10 +17,11 @@ trading_fee = 0.00045
 
 
 class backtest:
-    def __init__(self, annual_days=365):
+    def __init__(self, annual_days=365, risk_free_return=0.03):
         self.annual_days = annual_days
         self.price_data_path = price_data_path
         self.fee = trading_fee
+        self.risk_free_return = 0.03
 
     def csv_to_df(self, path: str):
         return pd.read_csv(path, index_col="date")
@@ -48,15 +49,27 @@ class backtest:
         cumulative = (strategy_return + 1).prod()
         annual_return = (cumulative ** (self.annual_days / total_days)) - 1
         annual_vol = np.sqrt(self.annual_days) * strategy_return.std()
-        sharpe = annual_return / annual_vol if annual_vol != 0 else np.nan
+        sharpe = (
+            (annual_return - self.risk_free_return) / annual_vol
+            if annual_vol != 0
+            else np.nan
+        )
         downside_std = strategy_return[strategy_return < 0].std() * np.sqrt(
             self.annual_days
         )
-        sortino = annual_return / downside_std if downside_std != 0 else np.nan
+        sortino = (
+            (annual_return - self.risk_free_return) / downside_std
+            if downside_std != 0
+            else np.nan
+        )
         cum_returns = (strategy_return + 1).cumprod()
         drawdown = cum_returns / cum_returns.cummax() - 1
         max_drawdown = drawdown.min()
-        calmar = annual_return / -max_drawdown if max_drawdown != 0 else np.nan
+        calmar = (
+            (annual_return - self.risk_free_return) / -max_drawdown
+            if max_drawdown != 0
+            else np.nan
+        )
         return [annual_return, annual_vol, sharpe, sortino, max_drawdown, calmar]
 
     def run(self, alpha_df: pd.DataFrame):
