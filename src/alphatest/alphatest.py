@@ -1,5 +1,5 @@
 import pandas as pd
-from util import cross_sectional as cs
+from .util import cross_sectional as cs
 import os
 import numpy as np
 import matplotlib.pyplot as plt

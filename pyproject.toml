@@ -1,0 +1,45 @@
+# pyproject.toml
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+# This is the name of your project that will be shown on PyPI.
+name = "alphatest"
+
+# The initial version of your project.
+version = "0.1.0"
+
+# Your name and email.
+authors = [
+  { name = "utilmon", email = "utilmonn@gmail.com" },
+]
+
+# A short, one-sentence description of your project.
+description = "A short description of the alphatest project."
+
+# The path to your README file.
+readme = "README.md"
+
+# The minimum version of Python required to use your project.
+requires-python = ">=3.8"
+
+# Classifiers help users find your project on PyPI.
+# For a full list, see: https://pypi.org/classifiers/
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+# Add your project's dependencies here.
+# For example:
+# dependencies = [
+#     "requests>=2.20.0",
+#     "numpy",
+# ]
+
+[project.urls]
+"Homepage" = "https://github.com/utilmon/alphatest"
+"Bug Tracker" = "https://github.com/utilmon/alphatest/issues"
