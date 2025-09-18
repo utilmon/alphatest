@@ -17,24 +17,19 @@ trading_fee = 0.00045
 
 
 class backtest:
-    def __init__(self, annual_days=365, risk_free_return=0.03):
+    def __init__(self, data_path: str, annual_days=365, risk_free_return=0.03):
         self.annual_days = annual_days
         self.price_data_path = price_data_path
         self.fee = trading_fee
         self.risk_free_return = 0.03
+        self.data_path = data_path
 
     def csv_to_df(self, path: str):
         return pd.read_csv(path, index_col="date")
 
-    def get_returns_df(self, tickers: list):
-        returns_map = {}
-        for ticker in tickers:
-            price_df = pd.read_csv(
-                os.path.join(self.price_data_path, f"{ticker}.csv"), index_col="date"
-            )
-            returns_sr = (price_df.close / price_df.close.shift(1)) - 1
-            returns_map[ticker] = returns_sr.rename(ticker)
-        return pd.concat(returns_map.values(), axis=1).fillna(0)
+    def get_data(self, data_type: str):
+        data_path = os.path.join(self.data_path, data_type + ".csv")
+        return pd.read_csv(data_path)
 
     def compute_turnover(self, alpha_df: pd.DataFrame):
         diff_df = alpha_df.diff()
