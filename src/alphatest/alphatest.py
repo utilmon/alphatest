@@ -3,33 +3,42 @@ from .util import cross_sectional as cs
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 plt.rcParams["figure.figsize"] = (12, 6)
 
-####
-
-alpha_path = r"C:\Users\qwane\Documents\git\tvl_alpha\backtest\tvl_diff7.csv"
-price_data_path = r"C:\Users\qwane\Documents\git\market_data\binance\spot"
-exclude = ["cro", "op", "bera"]
-trading_fee = 0.00045
-
-####
-
 
 class backtest:
-    def __init__(self, data_path: str, annual_days=365, risk_free_return=0.03):
+    def __init__(
+        self,
+        data_path: str,
+        annual_days: int = 365,
+        risk_free_return: float = 0.03,
+        trading_fee: float = 0.00025,
+    ):
         self.annual_days = annual_days
-        self.price_data_path = price_data_path
         self.fee = trading_fee
-        self.risk_free_return = 0.03
+        self.risk_free_return = risk_free_return
         self.data_path = data_path
+        self.valid_df = self.generate_valid_df()
+        self.cs = cs(valid_df=self.valid_df)
+
+    def generate_valid_df(self):
+
+        ### for now, will use returns df
+        returns_df = self.get_data("returns")
+        df = returns_df.map(lambda x: 1 if pd.notna(x) else np.nan)
+        return df
 
     def csv_to_df(self, path: str):
         return pd.read_csv(path, index_col="date")
 
-    def get_data(self, data_type: str):
+    def get_data(self, data_type: str, shift: int = 0):
         data_path = os.path.join(self.data_path, data_type + ".csv")
-        return pd.read_csv(data_path)
+        df = pd.read_csv(data_path).shift(shift)
+        df["time"] = pd.to_datetime(df["time"])
+        df = df.set_index("time")
+        return df
 
     def compute_turnover(self, alpha_df: pd.DataFrame):
         diff_df = alpha_df.diff()
@@ -65,12 +74,12 @@ class backtest:
             if max_drawdown != 0
             else np.nan
         )
-        return [annual_return, annual_vol, sharpe, sortino, max_drawdown, calmar]
+        return [sharpe, annual_return, max_drawdown, annual_vol, sortino, calmar]
 
     def run(self, alpha_df: pd.DataFrame):
 
-        alpha_df = alpha_df.apply(cs.scale_final, axis=1)
-        returns_df = self.get_returns_df(alpha_df.columns.values)
+        alpha_df = alpha_df.apply(self.cs.scale_final, axis=1)
+        returns_df = self.get_data("returns")
         common_rows = alpha_df.shift(1).index.intersection(returns_df.index)
         strategy_return = (
             (returns_df.loc[common_rows, alpha_df.columns] * alpha_df.shift(1))
@@ -87,11 +96,11 @@ class backtest:
         metrics_df = pd.DataFrame(
             {
                 "Metrics": [
-                    "CAGR",
-                    "Annualized Volatility",
                     "Sharpe Ratio",
-                    "Sortino Ratio",
+                    "CAGR",
                     "Maximum Drawdown",
+                    "Annualized Volatility",
+                    "Sortino Ratio",
                     "Calmar Ratio",
                     "Annual Turnover (%)",
                     "Long/Short position",
@@ -100,23 +109,34 @@ class backtest:
             }
         )
 
+        price_map = {}
+        strategy_index = strategy_return.index
+        start, end = strategy_index[0], strategy_index[-1]
+        # strategy_return.plot()
+
+        ### benchmarks
+        benchmarks_df = self.get_data("../benchmarks/returns")
+        for benchmark in benchmarks_df.columns:
+            df = benchmarks_df[benchmark].dropna()
+            # df = df[(df.index >= start) & (df.index <= end)]
+            df = df[start:end]
+            metrics = self.compute_metrics(df)
+            metrics.extend([0, 1])
+            metrics_df[benchmark] = [f"{metric:.2f}" for metric in metrics]
+            price_map[benchmark] = np.cumprod(1 + df).rename(benchmark)
+
         print(metrics_df)
 
-        # np.log(np.cumprod(1 + strategy_return)).plot()
-        # plt.ylabel("Log Price")
-        np.cumprod(1 + strategy_return).plot()
+        price_map["strategy"] = np.cumprod(1 + strategy_return).rename("strategy")
+        df_price = pd.concat(price_map.values(), axis=1)
+        df_price = df_price.sort_index()
+        # print(df_price)
+
+        ax = df_price.ffill().plot()
+        # date_format = mdates.AutoDateFormatter(mdates.MonthLocator())
+        # ax.xaxis.set_major_formatter(date_format)
         plt.ylabel("Price / Price(0)")
         plt.xlabel("Date")
+        plt.yscale("log")
+        plt.legend()
         plt.show()
-
-
-def main():
-
-    bs = backtest()
-    alpha_df = bs.csv_to_df(alpha_path)
-    alpha_df.drop(exclude, axis=1, inplace=True)
-    bs.run(alpha_df)
-
-
-if __name__ == "__main__":
-    main()

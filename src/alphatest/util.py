@@ -1,6 +1,11 @@
 import numpy as np
+import pandas as pd
 
 class cross_sectional:
+
+    def __init__(self, valid_df: pd.DataFrame):
+        self.valid_df = valid_df
+
     @staticmethod
     def neutralize(row):
         """
