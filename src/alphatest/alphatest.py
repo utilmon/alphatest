@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-plt.rcParams["figure.figsize"] = (12, 6)
+plt.rcParams["figure.figsize"] = (11, 6)
 
 
 class backtest:
@@ -140,3 +140,5 @@ class backtest:
         plt.yscale("log")
         plt.legend()
         plt.show()
+
+        return strategy_return
