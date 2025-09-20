@@ -12,11 +12,13 @@ class backtest:
     def __init__(
         self,
         data_path: str,
-        annual_days: int = 365,
+        annual_days: int = 365,  # 365, 252
+        daily_ticks: int = 1,  # 1 or 24
         risk_free_return: float = 0.03,
         trading_fee: float = 0.00025,
     ):
-        self.annual_days = annual_days
+        self.annual_ticks = annual_days * daily_ticks
+        self.daily_ticks = daily_ticks
         self.fee = trading_fee
         self.risk_free_return = risk_free_return
         self.data_path = data_path
@@ -29,9 +31,6 @@ class backtest:
         returns_df = self.get_data("returns")
         df = returns_df.map(lambda x: 1 if pd.notna(x) else np.nan)
         return df
-
-    def csv_to_df(self, path: str):
-        return pd.read_csv(path, index_col="date")
 
     def get_data(self, data_type: str, shift: int = 0):
         data_path = os.path.join(self.data_path, data_type + ".csv")
@@ -49,17 +48,17 @@ class backtest:
         return alpha_df.sum(axis=1).mean()
 
     def compute_metrics(self, strategy_return: pd.Series):
-        total_days = strategy_return.shape[0]
+        total_ticks = strategy_return.shape[0]
         cumulative = (strategy_return + 1).prod()
-        annual_return = (cumulative ** (self.annual_days / total_days)) - 1
-        annual_vol = np.sqrt(self.annual_days) * strategy_return.std()
+        annual_return = (cumulative ** (self.annual_ticks / total_ticks)) - 1
+        annual_vol = np.sqrt(self.annual_ticks) * strategy_return.std()
         sharpe = (
             (annual_return - self.risk_free_return) / annual_vol
             if annual_vol != 0
             else np.nan
         )
         downside_std = strategy_return[strategy_return < 0].std() * np.sqrt(
-            self.annual_days
+            self.annual_ticks
         )
         sortino = (
             (annual_return - self.risk_free_return) / downside_std
@@ -94,7 +93,7 @@ class backtest:
         array_range = array.max() - array.min()
         return int(np.ceil(array_range / bin_width))
 
-    def get_distribution(self, alpha_df: pd.DataFrame, bins: int = 100):
+    def get_distribution(self, alpha_df: pd.DataFrame):
 
         numerical_values = alpha_df.values.flatten()
         if numerical_values.size == 0:
@@ -111,9 +110,12 @@ class backtest:
         plt.title("Distribution of Values")
         plt.show()
 
-    def run(self, alpha_df: pd.DataFrame):
+    def run(self, alpha_df: pd.DataFrame, scale_final: bool = True):
 
-        alpha_df = alpha_df.apply(self.cs.scale_final, axis=1)
+        if scale_final:
+            alpha_df = alpha_df.apply(self.cs.scale_final, axis=1)
+        else:
+            alpha_df = alpha_df.replace([np.inf, -np.inf], np.nan).fillna(0)
         returns_df = self.get_data("returns")
         common_rows = alpha_df.shift(1).index.intersection(returns_df.index)
         strategy_return = (
@@ -124,9 +126,9 @@ class backtest:
         turnover = self.compute_turnover(alpha_df)
         strategy_return -= turnover * self.fee
         metrics = self.compute_metrics(strategy_return)
-        annual_turnover = turnover.mean() * self.annual_days
+        daily_turnover = turnover.mean() * self.daily_ticks
         long_short = self.compute_position(alpha_df)
-        metrics.extend([annual_turnover * 100, long_short])
+        metrics.extend([daily_turnover * 100, long_short])
 
         metrics_df = pd.DataFrame(
             {
@@ -137,7 +139,7 @@ class backtest:
                     "Annualized Volatility",
                     "Sortino Ratio",
                     "Calmar Ratio",
-                    "Annual Turnover (%)",
+                    "Daily Turnover (%)",
                     "Long/Short position",
                 ],
                 "Strategy": [f"{metric:.2f}" for metric in metrics],
