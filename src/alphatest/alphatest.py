@@ -107,7 +107,7 @@ class backtest:
         )
         plt.xlabel("Value")
         plt.ylabel("Frequency")
-        plt.title("Distribution of Values")
+        plt.title(rf"$\mu$:{np.mean(final_values):.3g}, $\sigma$:{np.std(final_values):.3g}")
         plt.show()
 
     def run(self, alpha_df: pd.DataFrame, scale_final: bool = True):
@@ -121,7 +121,7 @@ class backtest:
         strategy_return = (
             (returns_df.loc[common_rows, alpha_df.columns] * alpha_df.shift(1))
             .dropna()
-            .sum(axis=1)
+            .sum(axis=1).rename("strategy")
         )
         turnover = self.compute_turnover(alpha_df)
         strategy_return -= turnover * self.fee
@@ -160,11 +160,11 @@ class backtest:
             metrics = self.compute_metrics(df)
             metrics.extend([0, 1])
             metrics_df[benchmark] = [f"{metric:.2f}" for metric in metrics]
-            price_map[benchmark] = np.cumprod(1 + df).rename(benchmark)
+            price_map[benchmark] = np.cumprod(1 + df)
 
         print(metrics_df)
 
-        price_map["strategy"] = np.cumprod(1 + strategy_return).rename("strategy")
+        price_map["strategy"] = np.cumprod(1 + strategy_return)
         df_price = pd.concat(price_map.values(), axis=1)
         df_price = df_price.sort_index()
         # print(df_price)
@@ -172,7 +172,7 @@ class backtest:
         ax = df_price.ffill().plot()
         # date_format = mdates.AutoDateFormatter(mdates.MonthLocator())
         # ax.xaxis.set_major_formatter(date_format)
-        plt.ylabel("Price / Price(0)")
+        plt.ylabel("Growth of $1 investment")
         plt.xlabel("Date")
         plt.yscale("log")
         plt.legend()
