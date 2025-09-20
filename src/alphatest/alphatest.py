@@ -76,6 +76,41 @@ class backtest:
         )
         return [sharpe, annual_return, max_drawdown, annual_vol, sortino, calmar]
 
+    def get_optimal_bins(self, array: np.array):
+        """
+        Freedman-Diaconis Rule
+        """
+
+        if array.size < 2:
+            return 1
+        q75, q25 = np.percentile(array, [75, 25])
+        iqr = q75 - q25
+
+        # calculate bin width
+        bin_width = 2 * iqr / (len(array) ** (1 / 3))
+        if bin_width == 0:
+            return int(np.sqrt(len(array)))
+
+        array_range = array.max() - array.min()
+        return int(np.ceil(array_range / bin_width))
+
+    def get_distribution(self, alpha_df: pd.DataFrame, bins: int = 100):
+
+        numerical_values = alpha_df.values.flatten()
+        if numerical_values.size == 0:
+            print("No numerical data was found to plot the distribution")
+            return
+
+        final_values = numerical_values[~np.isnan(numerical_values)]
+        plt.hist(
+            final_values,
+            bins=self.get_optimal_bins(final_values),
+        )
+        plt.xlabel("Value")
+        plt.ylabel("Frequency")
+        plt.title("Distribution of Values")
+        plt.show()
+
     def run(self, alpha_df: pd.DataFrame):
 
         alpha_df = alpha_df.apply(self.cs.scale_final, axis=1)
