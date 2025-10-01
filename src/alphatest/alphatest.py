@@ -107,10 +107,16 @@ class backtest:
         )
         plt.xlabel("Value")
         plt.ylabel("Frequency")
-        plt.title(rf"$\mu$:{np.mean(final_values):.3g}, $\sigma$:{np.std(final_values):.3g}")
+        plt.title(
+            rf"$\mu$:{np.mean(final_values):.3g}, $\sigma$:{np.std(final_values):.3g}"
+        )
         plt.show()
 
     def run(self, alpha_df: pd.DataFrame, scale_final: bool = True):
+
+        if type(alpha_df) == pd.Series:
+            alpha_df = alpha_df.to_frame()
+            scale_final = False
 
         if scale_final:
             alpha_df = alpha_df.apply(self.cs.scale_final, axis=1)
@@ -121,7 +127,8 @@ class backtest:
         strategy_return = (
             (returns_df.loc[common_rows, alpha_df.columns] * alpha_df.shift(1))
             .dropna()
-            .sum(axis=1).rename("strategy")
+            .sum(axis=1)
+            .rename("strategy")
         )
         turnover = self.compute_turnover(alpha_df)
         strategy_return -= turnover * self.fee
