@@ -57,6 +57,10 @@ class backtest:
             if annual_vol != 0
             else np.nan
         )
+        profit_factor = (
+            strategy_return[strategy_return > 0].sum()
+            / -strategy_return[strategy_return < 0].sum()
+        )
         downside_std = strategy_return[strategy_return < 0].std() * np.sqrt(
             self.annual_ticks
         )
@@ -73,7 +77,7 @@ class backtest:
             if max_drawdown != 0
             else np.nan
         )
-        return [sharpe, annual_return, max_drawdown, annual_vol, sortino, calmar]
+        return [sharpe, profit_factor, annual_return, max_drawdown, annual_vol, sortino, calmar]
 
     def get_optimal_bins(self, array: np.array):
         """
@@ -141,6 +145,7 @@ class backtest:
             {
                 "Metrics": [
                     "Sharpe Ratio",
+                    "Profit Factor",
                     "CAGR",
                     "Maximum Drawdown",
                     "Annualized Volatility",
