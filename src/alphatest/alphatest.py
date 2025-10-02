@@ -34,10 +34,10 @@ class backtest:
 
     def get_data(self, data_type: str, shift: int = 0):
         data_path = os.path.join(self.data_path, data_type + ".csv")
-        df = pd.read_csv(data_path).shift(shift)
+        df = pd.read_csv(data_path)
         df["time"] = pd.to_datetime(df["time"])
         df = df.set_index("time")
-        return df
+        return df.shift(shift)
 
     def compute_turnover(self, alpha_df: pd.DataFrame):
         diff_df = alpha_df.diff()
@@ -137,7 +137,7 @@ class backtest:
         common_rows = alpha_df.shift(1).index.intersection(returns_df.index)
         strategy_return = (
             (returns_df.loc[common_rows, alpha_df.columns] * alpha_df.shift(1))
-            .dropna()
+            .fillna(0)
             .sum(axis=1)
             .rename("strategy")
         )
@@ -184,8 +184,7 @@ class backtest:
         print(metrics_df)
 
         price_map["strategy"] = np.cumprod(1 + strategy_return)
-        df_price = pd.concat(price_map.values(), axis=1)
-        df_price = df_price.sort_index()
+        df_price = pd.DataFrame(price_map).sort_index()
         # print(df_price)
 
         ax = df_price.ffill().plot()
