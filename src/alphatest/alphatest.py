@@ -121,6 +121,13 @@ class backtest:
         if type(alpha_df) == pd.Series:
             alpha_df = alpha_df.to_frame()
             scale_final = False
+        
+        ### remove NaN only rows
+        first_valid_index = alpha_df.first_valid_index()
+        if first_valid_index is not None:
+            alpha_df = alpha_df.loc[first_valid_index:]
+
+        ### neutralize
 
         if scale_final:
             alpha_df = alpha_df.apply(self.cs.scale_final, axis=1)
