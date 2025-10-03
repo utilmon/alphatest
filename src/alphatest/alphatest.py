@@ -51,6 +51,7 @@ class backtest:
         total_ticks = strategy_return.shape[0]
         cumulative = (strategy_return + 1).prod()
         annual_return = (cumulative ** (self.annual_ticks / total_ticks)) - 1
+        # annual_return = strategy_return.mean() * self.annual_ticks
         annual_vol = np.sqrt(self.annual_ticks) * strategy_return.std()
         sharpe = (
             (annual_return - self.risk_free_return) / annual_vol
