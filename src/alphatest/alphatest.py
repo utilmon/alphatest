@@ -24,6 +24,8 @@ class backtest:
         self.data_path = data_path
         self.valid_df = self.generate_valid_df()
         self.cs = cs(valid_df=self.valid_df)
+        self.crypto_benchmarks = ["BTC"]
+        self.stock_benchmarks = ["VOO", "GLD"]
 
     def generate_valid_df(self):
 
@@ -47,12 +49,12 @@ class backtest:
     def compute_position(self, alpha_df: pd.DataFrame):
         return alpha_df.sum(axis=1).mean()
 
-    def compute_metrics(self, strategy_return: pd.Series):
+    def compute_metrics(self, strategy_return: pd.Series, annual_ticks: int):
         total_ticks = strategy_return.shape[0]
         cumulative = (strategy_return + 1).prod()
-        annual_return = (cumulative ** (self.annual_ticks / total_ticks)) - 1
-        # annual_return = strategy_return.mean() * self.annual_ticks
-        annual_vol = np.sqrt(self.annual_ticks) * strategy_return.std()
+        annual_return = (cumulative ** (annual_ticks / total_ticks)) - 1
+        # annual_return = strategy_return.mean() * annual_ticks
+        annual_vol = np.sqrt(annual_ticks) * strategy_return.std()
         sharpe = (
             (annual_return - self.risk_free_return) / annual_vol
             if annual_vol != 0
@@ -63,7 +65,7 @@ class backtest:
             / -strategy_return[strategy_return < 0].sum()
         )
         downside_std = strategy_return[strategy_return < 0].std() * np.sqrt(
-            self.annual_ticks
+            annual_ticks
         )
         sortino = (
             (annual_return - self.risk_free_return) / downside_std
@@ -78,7 +80,15 @@ class backtest:
             if max_drawdown != 0
             else np.nan
         )
-        return [sharpe, profit_factor, annual_return, max_drawdown, annual_vol, sortino, calmar]
+        return [
+            sharpe,
+            profit_factor,
+            annual_return,
+            max_drawdown,
+            annual_vol,
+            sortino,
+            calmar,
+        ]
 
     def get_optimal_bins(self, array: np.array):
         """
@@ -122,7 +132,7 @@ class backtest:
         if type(alpha_df) == pd.Series:
             alpha_df = alpha_df.to_frame()
             scale_final = False
-        
+
         ### remove NaN only rows
         first_valid_index = alpha_df.first_valid_index()
         if first_valid_index is not None:
@@ -144,7 +154,7 @@ class backtest:
         )
         turnover = self.compute_turnover(alpha_df)
         strategy_return -= turnover * self.fee
-        metrics = self.compute_metrics(strategy_return)
+        metrics = self.compute_metrics(strategy_return, self.annual_ticks)
         daily_turnover = turnover.mean() * self.daily_ticks
         long_short = self.compute_position(alpha_df)
         metrics.extend([daily_turnover * 100, long_short])
@@ -173,11 +183,16 @@ class backtest:
 
         ### benchmarks
         benchmarks_df = self.get_data("../benchmarks/returns")
-        for benchmark in benchmarks_df.columns:
+        for benchmark in self.crypto_benchmarks + self.stock_benchmarks:
             df = benchmarks_df[benchmark].dropna()
             # df = df[(df.index >= start) & (df.index <= end)]
             df = df[start:end]
-            metrics = self.compute_metrics(df)
+            if benchmark in self.stock_benchmarks:
+                annual_ticks = 252
+            elif benchmark in self.crypto_benchmarks:
+                annual_ticks = 365
+            metrics = self.compute_metrics(df, annual_ticks=annual_ticks)
+
             metrics.extend([0, 1])
             metrics_df[benchmark] = [f"{metric:.2f}" for metric in metrics]
             price_map[benchmark] = np.cumprod(1 + df)
