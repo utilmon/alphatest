@@ -8,8 +8,13 @@ import numpy as np
 from pytz import timezone
 import time
 
+###
+
+stock_tickers = ["VOO", "GLD", "TLT", "QQQ"]
+crypto_tickers = ["BTC", "ETH"]
+
+
 #### schwab
-tickers = ["VOO", "GLD"]
 returns_map = {}
 
 api_key = cd.app_key
@@ -43,7 +48,7 @@ def get_ohlc(symbol: str) -> pd.DataFrame:
     )
 
 
-for ticker in tickers:
+for ticker in stock_tickers:
     df_ohlcv = get_ohlc(ticker)
     df_returns = df_ohlcv.close / df_ohlcv.close.shift(1) - 1
     returns_map[ticker] = df_returns.rename(ticker)
@@ -157,10 +162,10 @@ def get_ohlc(symbol: str, interval: str = "1d") -> pd.DataFrame:
         columns=columns,
     )
 
-
-df_ohlcv = get_ohlc("BTC/USDT")
-df_returns = df_ohlcv.close / df_ohlcv.close.shift(1) - 1
-returns_map["BTC"] = df_returns.rename("BTC")
+for ticker in crypto_tickers:
+    df_ohlcv = get_ohlc(ticker + "/USDT")
+    df_returns = df_ohlcv.close / df_ohlcv.close.shift(1) - 1
+    returns_map[ticker] = df_returns.rename(ticker)
 
 ####
 
