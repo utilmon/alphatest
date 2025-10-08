@@ -16,6 +16,8 @@ class backtest:
         daily_ticks: int = 1,  # 1 or 24
         risk_free_return: float = 0.03,
         trading_fee: float = 0.00025,
+        crypto_benchmarks: list = ["BTC"],
+        stock_benchmarks: list = ["VOO", "GLD"],
     ):
         self.annual_ticks = annual_days * daily_ticks
         self.daily_ticks = daily_ticks
@@ -24,8 +26,18 @@ class backtest:
         self.data_path = data_path
         self.valid_df = self.generate_valid_df()
         self.cs = cs(valid_df=self.valid_df)
-        self.crypto_benchmarks = ["BTC"]
-        self.stock_benchmarks = ["VOO", "GLD"]
+        self.crypto_benchmarks = crypto_benchmarks
+        self.stock_benchmarks = stock_benchmarks
+        self.print_parameters()
+
+    def print_parameters(self):
+        print("Backtesting parameters:")
+        print(f"Annual days: {self.annual_ticks}, Daily ticks: {self.daily_ticks}")
+        print(f"Trading fee (%): {self.fee * 100}%")
+        print(f"Risk free return (%): {self.risk_free_return *100}%")
+        print(rf"Data path: {self.data_path}")
+        print(f"Crypto benchmarks: {self.crypto_benchmarks}")
+        print(f"Stock benchmarks: {self.stock_benchmarks}")
 
     def generate_valid_df(self):
 
@@ -126,6 +138,9 @@ class backtest:
         plt.show()
 
     def run(self, alpha_df: pd.DataFrame, scale_final: bool = True):
+
+        self.print_parameters()
+        print(f"Scale final: {scale_final}\n")
 
         if type(alpha_df) == pd.Series:
             alpha_df = alpha_df.to_frame()
