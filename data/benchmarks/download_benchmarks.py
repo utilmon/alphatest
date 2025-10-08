@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 # import schwabdev # couldn't generate tokens
 import credential as cd
 from schwab import auth, client  # https://github.com/alexgolec/schwab-py
@@ -20,7 +22,7 @@ returns_map = {}
 api_key = cd.app_key
 app_secret = cd.secret
 callback_url = "https://127.0.0.1"
-token_path = "./token.json"
+token_path = "../token.json"
 
 c = auth.easy_client(api_key, app_secret, callback_url, token_path)  # for script
 
