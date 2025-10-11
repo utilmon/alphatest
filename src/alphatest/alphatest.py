@@ -213,8 +213,8 @@ class backtest:
         benchmarks_df = self.get_data("../benchmarks/returns")
         for benchmark in self.stock_benchmarks + self.crypto_benchmarks:
             df = benchmarks_df[benchmark].dropna()
-            # df = df[(df.index >= start) & (df.index <= end)]
-            df = df[start:end]
+            df = df[(df.index >= start) & (df.index <= end)]
+            # df = df[start:end]
             if benchmark in self.stock_benchmarks:
                 annual_ticks = 252
             elif benchmark in self.crypto_benchmarks:

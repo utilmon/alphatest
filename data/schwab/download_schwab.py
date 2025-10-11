@@ -10,7 +10,7 @@ from pytz import timezone
 
 ###
 
-stock_tickers = ["VOO", "GLD", "TLT", "QQQ"]
+stock_tickers = ["VOO", "GLD", "TLT", "QQQ","QLD","UBT","IEF","DBC","UUP"]
 candle_columns = ["open", "high", "low", "close", "volume"]
 
 #### schwab
