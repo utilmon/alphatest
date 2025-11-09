@@ -99,6 +99,45 @@ class backtest:
             else np.nan
         )
         return metrics_map
+    
+    def compute_metrics2(self, strategy_return: pd.Series, annual_ticks: int):
+
+        metrics_map = {}
+        total_ticks = strategy_return.shape[0]
+        annual_return = strategy_return.mean() * annual_ticks
+        metrics_map["annual_return"] = annual_return
+        annual_vol = np.sqrt(annual_ticks) * strategy_return.std()
+        metrics_map["annual_vol"] = annual_vol
+
+        metrics_map["sharpe"] = (
+            (annual_return - self.risk_free_return) / annual_vol
+            if annual_vol != 0
+            else np.nan
+        )
+        metrics_map["profit_factor"] = (
+            strategy_return[strategy_return > 0].sum()
+            / -strategy_return[strategy_return < 0].sum()
+        )
+        downside_std = strategy_return[strategy_return < 0].std() * np.sqrt(
+            annual_ticks
+        )
+        metrics_map["sortino"] = (
+            (annual_return - self.risk_free_return) / downside_std
+            if downside_std != 0
+            else np.nan
+        )
+        cum_returns = strategy_return.cumsum() + 1
+        drawdown = cum_returns / cum_returns.cummax() - 1
+        metrics_map["drawdown"] = drawdown
+        max_drawdown = drawdown.min()
+        metrics_map["max_drawdown"] = max_drawdown
+        metrics_map["calmar"] = (
+            (annual_return - self.risk_free_return) / -max_drawdown
+            if max_drawdown != 0
+            else np.nan
+        )
+        return metrics_map
+    
 
     def get_optimal_bins(self, array: np.array):
         """
