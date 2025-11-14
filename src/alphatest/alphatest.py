@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-plt.rcParams["figure.figsize"] = (11, 12)
+plt.rcParams["figure.figsize"] = (11, 6)
 
 
 class backtest:
@@ -99,7 +99,7 @@ class backtest:
             else np.nan
         )
         return metrics_map
-    
+
     def compute_metrics2(self, strategy_return: pd.Series, annual_ticks: int):
 
         metrics_map = {}
@@ -137,7 +137,6 @@ class backtest:
             else np.nan
         )
         return metrics_map
-    
 
     def get_optimal_bins(self, array: np.array):
         """
@@ -270,7 +269,9 @@ class backtest:
 
         print(metrics_df)
 
-        fig, axs = plt.subplots(nrows=2, ncols=1, gridspec_kw={"height_ratios": [2, 1]})
+        fig, axs = plt.subplots(
+            nrows=2, ncols=1, gridspec_kw={"height_ratios": [2, 1]}, figsize=(11, 12)
+        )
 
         price_map["strategy"] = np.cumprod(1 + strategy_return)
         df_price = pd.DataFrame(price_map).sort_index()
