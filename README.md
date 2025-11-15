@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="docs/logo.png" alt="AlphaTest Logo" width="250">
+</div>
+
 # **AlphaTest: Quantitative Strategy Backtester**
 
 **AlphaTest** is a lightweight, vectorized Python framework designed for backtesting quantitative trading strategies. It supports multi-asset portfolios, realistic transaction cost modeling, and benchmarking against both Equity and Cryptocurrency indices.  
