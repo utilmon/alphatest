@@ -9,7 +9,7 @@ build-backend = "hatchling.build"
 name = "alphatest"
 
 # The initial version of your project.
-version = "0.1.1"
+version = "0.1.2"
 
 # Your name and email.
 authors = [

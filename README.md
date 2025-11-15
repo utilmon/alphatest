@@ -5,7 +5,7 @@
 # **AlphaTest: Quantitative Strategy Backtester**
 
 <p align="center">
-  <a href="https://pypi.org/project/alphatest/"><img src="https://img.shields.io/pypi/v/alphatest.svg" alt="PyPI version" /></a>&nbsp;<a href="https://pypi.org/project/alphatest/"><img src="https://img.shields.io/pypi/pyversions/alphatest.svg" alt="Python versions" /></a>&nbsp;<a href="https://github.com/YOUR_USERNAME/alphatest/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/alphatest.svg" alt="License" /></a>
+  <a href="https://pypi.org/project/alphatest/"><img src="https://img.shields.io/pypi/v/alphatest.svg" alt="PyPI version" /></a>&nbsp;<a href="https://pypi.org/project/alphatest/"><img src="https://img.shields.io/pypi/pyversions/alphatest.svg" alt="Python versions" /></a>&nbsp;<a href="https://github.com/utilmon/alphatest/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/alphatest.svg" alt="License" /></a>
 </p>
 
 **AlphaTest** is a lightweight, vectorized Python framework designed for backtesting quantitative trading strategies. It supports multi-asset portfolios, realistic transaction cost modeling, and benchmarking against both Equity and Cryptocurrency indices.  
