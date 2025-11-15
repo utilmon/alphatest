@@ -2,7 +2,7 @@
   <img src="https://github.com/utilmon/alphatest/blob/main/docs/logo.png?raw=true" alt="AlphaTest Logo" width="250">
 </div>
 
-# **AlphaTest: Quantitative Strategy Backtester**
+# **AlphaTest: Vectorized Quantitative Strategy Backtester**
 
 <p align="center">
   <a href="https://pypi.org/project/alphatest/"><img src="https://img.shields.io/pypi/v/alphatest.svg" alt="PyPI version" /></a>&nbsp;<a href="https://pypi.org/project/alphatest/"><img src="https://img.shields.io/pypi/pyversions/alphatest.svg" alt="Python versions" /></a>&nbsp;<a href="https://github.com/utilmon/alphatest/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/alphatest.svg" alt="License" /></a>
