@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/logo.png" alt="AlphaTest Logo" width="250">
+  <img src="https://github.com/utilmon/alphatest/blob/main/docs/logo.png?raw=true" alt="AlphaTest Logo" width="250">
 </div>
 
 # **AlphaTest: Quantitative Strategy Backtester**
