@@ -134,8 +134,8 @@ The compute_metrics method calculates the following statistics:
 | daily_ticks       | 1                | Observations per day (e.g., 24 for hourly).      |
 | risk_free_return  | 0.03             | Annualized risk-free rate (decimal).             |
 | trading_fee       | 0.00025          | Transaction cost per trade (decimal).            |
-| crypto_benchmarks | \[``BTC"\]       | List of crypto ticker columns in benchmark file. |
-| stock_benchmarks  | \[`VOO", `GLD"\] | List of stock ticker columns in benchmark file.  |
+| crypto_benchmarks | \["BTC"\]       | List of crypto ticker columns in benchmark file. |
+| stock_benchmarks  | \["VOO", "GLD"\] | List of stock ticker columns in benchmark file.  |
 
 ## **Notes**
 
