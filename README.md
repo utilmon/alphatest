@@ -141,3 +141,18 @@ The compute_metrics method calculates the following statistics:
 
 - **Scaling:** The engine assumes the presence of a .util module with a cross_sectional class for signal neutralization/scaling.
 - **Returns:** The engine uses **Geometric Compounding** for cumulative returns and **Simple Returns** for daily input data.
+
+## **Run Example**
+```
+                 Metrics Strategy    VOO    GLD    BTC
+0           Sharpe Ratio     2.01   0.84   2.47   0.39
+1          Profit Factor     1.32   1.22   1.45   1.10
+2                   CAGR     0.48   0.17   0.48   0.21
+3       Maximum Drawdown    -0.14  -0.19  -0.10  -0.28
+4  Annualized Volatility     0.22   0.17   0.18   0.46
+5          Sortino Ratio     2.92   1.06   3.45   0.61
+6           Calmar Ratio     3.17   0.74   4.47   0.63
+7     Daily Turnover (%)     4.67   0.00   0.00   0.00
+8    Long/Short position     0.00   1.00   1.00   1.00
+```
+![Example run](docs/run_ex.png "Example run")
