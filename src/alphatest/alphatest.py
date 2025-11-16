@@ -18,6 +18,7 @@ class backtest:
         trading_fee: float = 0.00025,
         crypto_benchmarks: list = ["BTC"],
         stock_benchmarks: list = ["VOO", "GLD"],
+        compound: bool = True,
     ):
         """
         Initializes the class with configuration parameters for data analysis and benchmarking.
@@ -30,6 +31,7 @@ class backtest:
             trading_fee (float, optional): Trading fee per transaction (default is 0.00025).
             crypto_benchmarks (list, optional): List of cryptocurrency benchmark symbols (default is ["BTC"]).
             stock_benchmarks (list, optional): List of stock benchmark symbols (default is ["VOO", "GLD"]).
+            compound (bool, optional): Whether to use compound returns (default is True).
 
         Attributes:
             annual_ticks (int): Total number of ticks in a year.
@@ -41,6 +43,7 @@ class backtest:
             cs (object): Custom object initialized with the validated data frame.
             crypto_benchmarks (list): Cryptocurrency benchmark symbols.
             stock_benchmarks (list): Stock benchmark symbols.
+            compound (bool): Whether to use compound returns.
 
         Calls:
             self.generate_valid_df(): Generates a validated data frame from the data source.
@@ -55,6 +58,7 @@ class backtest:
         self.cs = cs(valid_df=self.valid_df)
         self.crypto_benchmarks = crypto_benchmarks
         self.stock_benchmarks = stock_benchmarks
+        self.compound = compound
         self.print_parameters()
 
     def print_parameters(self):
@@ -78,7 +82,9 @@ class backtest:
         - None
         """
         print("Backtesting parameters:")
-        print(f"Annual days: {self.annual_ticks}, Daily ticks: {self.daily_ticks}")
+        print(
+            f"Annual days: {self.annual_ticks/self.daily_ticks}, Daily ticks: {self.daily_ticks}"
+        )
         print(f"Trading fee (%): {self.fee * 100}%")
         print(f"Risk free return (%): {self.risk_free_return *100}%")
         print(rf"Data path: {self.data_path}")
@@ -191,7 +197,9 @@ class backtest:
         """
         return alpha_df.sum(axis=1).mean()
 
-    def compute_metrics(self, strategy_return: pd.Series, annual_ticks: int):
+    def compute_compounding_metrics(
+        self, strategy_return: pd.Series, annual_ticks: int
+    ):
         """
         Compute a set of performance and risk metrics from a series of periodic strategy returns.
         Parameters
@@ -280,7 +288,7 @@ class backtest:
         )
         return metrics_map
 
-    def compute_metrics2(self, strategy_return: pd.Series, annual_ticks: int):
+    def compute_additive_metrics(self, strategy_return: pd.Series, annual_ticks: int):
         """
         Compute a set of performance and risk metrics for a strategy return series.
         Parameters
@@ -319,7 +327,6 @@ class backtest:
         """
 
         metrics_map = {}
-        total_ticks = strategy_return.shape[0]
         annual_return = strategy_return.mean() * annual_ticks
         metrics_map["annual_return"] = annual_return
         annual_vol = np.sqrt(annual_ticks) * strategy_return.std()
@@ -487,7 +494,14 @@ class backtest:
         )
         turnover = self.compute_turnover(alpha_df)
         strategy_return -= turnover * self.fee
-        metrics_map = self.compute_metrics(strategy_return, self.annual_ticks)
+        if self.compound:
+            metrics_map = self.compute_compounding_metrics(
+                strategy_return, self.annual_ticks
+            )
+        else:
+            metrics_map = self.compute_additive_metrics(
+                strategy_return, self.annual_ticks
+            )
         metrics_map["returns"] = strategy_return
         metrics_map["turnover"] = turnover.mean() * self.daily_ticks * 100
         metrics_map["long_short"] = self.compute_position(alpha_df)
@@ -539,7 +553,9 @@ class backtest:
                 annual_ticks = 252
             elif benchmark in self.crypto_benchmarks:
                 annual_ticks = 365
-            bench_metrics = self.compute_metrics(df, annual_ticks=annual_ticks)
+            bench_metrics = self.compute_compounding_metrics(
+                df, annual_ticks=annual_ticks
+            )
             bench_metrics["turnover"] = 0
             bench_metrics["long_short"] = 1
 
@@ -555,7 +571,10 @@ class backtest:
             nrows=2, ncols=1, gridspec_kw={"height_ratios": [2, 1]}, figsize=(11, 12)
         )
 
-        price_map["strategy"] = np.cumprod(1 + strategy_return)
+        if self.compound:
+            price_map["strategy"] = np.cumprod(1 + strategy_return)
+        else:
+            price_map["strategy"] = 1 + strategy_return.cumsum()
         df_price = pd.DataFrame(price_map).sort_index()
         # print(df_price)
 
