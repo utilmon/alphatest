@@ -583,7 +583,8 @@ class backtest:
         df_price.ffill().plot(ax=axs[0])
         axs[0].set_ylabel("Growth of $1 investment")
         # axs[0].set_xlabel("Date")
-        axs[0].set_yscale("log")
+        if self.compound:
+            axs[0].set_yscale("log")
 
         drawdown_map["strategy"] = metrics_map["drawdown"]
         df_drawdown = pd.DataFrame(drawdown_map).sort_index()
