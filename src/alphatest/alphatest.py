@@ -480,6 +480,8 @@ class backtest:
 
         ### neutralize
 
+        alpha_df = alpha_df.apply(pd.to_numeric, errors="coerce")
+
         if scale_final:
             alpha_df = alpha_df.apply(self.cs.scale_final, axis=1)
         else:
