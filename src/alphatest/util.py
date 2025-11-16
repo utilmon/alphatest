@@ -17,7 +17,7 @@ class cross_sectional:
 
         # Calculate the mean of *only* the finite values by temporarily
         # replacing infinity and -infinity with NaN.
-        mean_of_finite_values = row.replace([np.inf, -np.inf], np.nan).mean()
+        mean_of_finite_values = row.mask(np.isinf(row), np.nan).mean()
 
         # Subtracting the mean from the original row centers the finite numbers
         # while leaving inf, -inf, and NaN values untouched.
@@ -31,7 +31,7 @@ class cross_sectional:
         Infinity (inf) and NaN values are converted to 0 before scaling.
         """
         # Step 1: Replace inf and -inf with NaN, then replace all NaN with 0
-        row_no_nan = row.replace([np.inf, -np.inf], np.nan).fillna(0)
+        row_no_nan = row.mask(np.isinf(row), np.nan).fillna(0)
 
         # Step 2: Calculate the sum of the absolute values (L1 norm)
         l1_norm = row_no_nan.abs().sum()

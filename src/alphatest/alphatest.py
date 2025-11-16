@@ -483,7 +483,7 @@ class backtest:
         if scale_final:
             alpha_df = alpha_df.apply(self.cs.scale_final, axis=1)
         else:
-            alpha_df = alpha_df.replace([np.inf, -np.inf], np.nan).fillna(0)
+            alpha_df = alpha_df.mask(np.isinf(alpha_df), np.nan).fillna(0)
         returns_df = self.get_data("returns")
         common_rows = alpha_df.shift(1).index.intersection(returns_df.index)
         strategy_return = (
